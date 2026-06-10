@@ -237,17 +237,39 @@ router.put('/:id',async(req,res)=>{
 })
 
 //eliminar fisicamente
-router.delete('/',async(req,res)=>{
+router.delete('/:id', async(req,res)=>{
     try{
 
+      //Verificar si existe la herramienta
+      const [resultHerramientas] = await db.query(
+        "SELECT * FROM herramientas WHERE idherramienta = ?",
+        [req.params.id]
+      );
+
+      if(resultHerramientas.length === 0){
+        return res.status(404).json({
+          success: false,
+          message: 'No encontramos la herramienta con el ID indicado'
+        });
+      }
+
+      //Eliminar registro
+      const query = 'DELETE FROM herramientas WHERE idherramienta = ?';
+
+      const [result] = await db.query(query,[req.params.id]);
+
+      res.json({
+        success: true,
+        message: 'Herramienta eliminada correctamente'
+      });
+
     }catch(e){
-      //¿Por que 500? -> error generado del lado servidor 
       res.status(500).json({
-        succes:false, 
-        message:`error en la comunicacion al servidor`,
-        error: e.message
-      })
+        succes:false,
+        message:'error en la comunicacion al servidor',
+        error:e.message
+      });
     }
-})
+});
 
 module.exports = router;
